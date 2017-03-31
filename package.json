@@ -1,6 +1,6 @@
 {
   "name": "kafka-simple-producer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Simple wrapper for node-rdkafka Producer class",
   "main": "dist/app.js",
   "files": [

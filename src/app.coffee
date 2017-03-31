@@ -26,8 +26,8 @@ class KafkaProducers
         handlers[topicName] = (key_field_name, handler_cb) ->
           [key_field_name, handler_cb] = ['identifier', key_field_name] unless arguments.length > 1
           (req, res, next) ->
-            data = res.locals.body or req.body or {}
-            user = res.locals.user or req.user or {}
+            data = res.locals?.body or req.body or {}
+            user = res.locals?.user or req.user or {}
             data[key_field_name] = uuid()
             data.timestamp = new Date().toISOString()
             data.user = user

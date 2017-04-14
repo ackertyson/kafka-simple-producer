@@ -23,18 +23,18 @@ class KafkaProducers
     each @producers, ({ producer, topic, partition }, topicName, done) ->
       # initialize each PRODUCER, create Express 'post' handler for each one...
       producer.on 'ready', ->
-        handlers[topicName] = (key_field_name, handler_cb) ->
-          [key_field_name, handler_cb] = ['identifier', key_field_name] unless arguments.length > 1
+        handlers[topicName] = (handler_cb) ->
           (req, res, next) ->
-            data = res.locals?.body or req.body or {}
-            user = res.locals?.user or req.user or {}
-            data[key_field_name] = uuid()
+            data = {}
+            data.http_method = req.method.toUpperCase()
+            data.key = uuid()
             data.timestamp = new Date().toISOString()
-            data.user = user
+            data.user = res.locals?.user or req.user or {}
+            data.payload = res.locals?.body or req.body or {}
             try
-              producer.produce topic, partition, Buffer.from(JSON.stringify data), data.identifier
+              producer.produce topic, partition, Buffer.from(JSON.stringify data), data.key
               return handler_cb data, req, res, next if handler_cb?
-              res.sendStatus 202
+              next()
             catch ex
               next ex
         done()

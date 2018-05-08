@@ -26,11 +26,11 @@ api = express.Router()
 Producers = require 'kafka-simple-producer'
 producers = new Producers { brokers: 'kafka:9092', topics: ['cat', 'vehicle'] }
 
-producers.connect (err, handlers) -> # a HANDLER is created for each TOPIC passed to the constructor
+producers.connect (err, handlers, middleware) ->
   throw err if err?
 
   cat = express.Router()
-  cat.post '/', handlers.cat()
+  cat.post '/', handlers.cat # HANDLERS terminate the request with res.sendStatus(202)
   api.use '/cat', cat
 
   vehicle = express.Router()
@@ -39,7 +39,9 @@ producers.connect (err, handlers) -> # a HANDLER is created for each TOPIC passe
       res.json data
     .catch (err) ->
       res.status(500).json err
-  vehicle.post '/', handlers.vehicle()
+  vehicle.post '/', middleware.vehicle, (req, res, next) ->
+    # do something extra with produced message
+    res.status(202).json res.locals.message
   api.use '/vehicle', vehicle
 
   app.use '/', api
